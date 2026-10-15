@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldAlert,
   Play,
@@ -7,6 +8,7 @@ import {
   CheckCircle,
   Loader2,
   Download,
+  Target,
 } from 'lucide-react';
 import { getDocuments, saveAnalysis, generateId } from '../lib/storage';
 import { combinedSimilarity, findSimilarPassages } from '../lib/algorithms';
@@ -75,7 +77,6 @@ export default function PlagiarismPage() {
 
       setReport(newReport);
 
-      // Save analysis
       saveAnalysis({
         id: generateId(),
         type: 'plagiarism',
@@ -129,30 +130,34 @@ RELATÓRIO GERADO POR DOCSIM - Sistema de Análise de Similaridade Textual
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Configuration */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-6 border-b border-slate-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
-              <ShieldAlert className="w-5 h-5 text-white" />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/50 overflow-hidden"
+      >
+        <div className="p-8 border-b border-slate-100 bg-gradient-to-r from-red-50/50 to-orange-50/50">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 via-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-red-500/30">
+              <ShieldAlert className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-800">Detecção de Plágio</h3>
-              <p className="text-sm text-slate-500">
+              <h3 className="text-2xl font-bold text-slate-800">Detecção de Plágio</h3>
+              <p className="text-sm text-slate-600 mt-1">
                 Verifique a originalidade de um documento comparando com todos os outros
               </p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* Document selection */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Documento para verificar
               </label>
               <select
                 value={selectedDoc}
                 onChange={(e) => setSelectedDoc(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-sm"
+                className="w-full px-5 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-red-400 focus:ring-4 focus:ring-red-100 text-sm font-medium transition-all"
               >
                 <option value="">Selecione um documento...</option>
                 {documents.map(doc => (
@@ -163,8 +168,11 @@ RELATÓRIO GERADO POR DOCSIM - Sistema de Análise de Similaridade Textual
 
             {/* Threshold */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Threshold de similaridade: {threshold}%
+              <label className="block text-sm font-semibold text-slate-700 mb-3">
+                <div className="flex items-center justify-between">
+                  <span>Threshold de similaridade</span>
+                  <span className="text-lg font-bold text-red-600">{threshold}%</span>
+                </div>
               </label>
               <input
                 type="range"
@@ -172,149 +180,196 @@ RELATÓRIO GERADO POR DOCSIM - Sistema de Análise de Similaridade Textual
                 max="95"
                 value={threshold}
                 onChange={(e) => setThreshold(parseInt(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-500"
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
               />
-              <div className="flex justify-between text-xs text-slate-400 mt-1">
+              <div className="flex justify-between text-xs text-slate-500 mt-2 font-medium">
                 <span>20% (sensível)</span>
                 <span>95% (restrito)</span>
               </div>
             </div>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={runPlagiarismCheck}
               disabled={!selectedDoc || analyzing}
-              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-red-200"
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 text-white text-sm font-bold hover:from-red-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-red-500/30"
             >
-              {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              {analyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
               {analyzing ? 'Analisando...' : 'Verificar Originalidade'}
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Report */}
-      {report && (
-        <>
-          {/* Summary */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-800">Relatório de Originalidade</h3>
-              <button
-                onClick={exportReport}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-all"
+      <AnimatePresence>
+        {report && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {/* Summary */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/50 overflow-hidden mb-6">
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-slate-800">Relatório de Originalidade</h3>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={exportReport}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 transition-all"
+                >
+                  <Download className="w-4 h-4" />
+                  Exportar
+                </motion.button>
+              </div>
+
+              <div className="p-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className={`p-6 rounded-2xl border-2 ${
+                      report.originalityScore >= 70 ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200' :
+                      report.originalityScore >= 40 ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200' :
+                      'bg-gradient-to-br from-red-50 to-orange-50 border-red-200'
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Score de Originalidade</p>
+                    <p className={`text-4xl font-black ${
+                      report.originalityScore >= 70 ? 'text-emerald-600' :
+                      report.originalityScore >= 40 ? 'text-amber-600' :
+                      'text-red-600'
+                    }`}>
+                      {report.originalityScore}%
+                    </p>
+                  </motion.div>
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200"
+                  >
+                    <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Similaridade Total</p>
+                    <p className="text-4xl font-black text-slate-800">{report.totalSimilarity}%</p>
+                  </motion.div>
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200"
+                  >
+                    <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Correspondências</p>
+                    <p className="text-4xl font-black text-slate-800">{report.matches.length}</p>
+                  </motion.div>
+                </div>
+
+                {/* Verdict */}
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className={`p-5 rounded-2xl flex items-center gap-4 ${
+                    report.originalityScore >= 70 ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200' :
+                    report.originalityScore >= 40 ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200' :
+                    'bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200'
+                  }`}
+                >
+                  {report.originalityScore >= 70 ? (
+                    <CheckCircle className="w-8 h-8 text-emerald-500 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-8 h-8 text-amber-500 shrink-0" />
+                  )}
+                  <div>
+                    <p className={`text-base font-bold ${
+                      report.originalityScore >= 70 ? 'text-emerald-800' :
+                      report.originalityScore >= 40 ? 'text-amber-800' :
+                      'text-red-800'
+                    }`}>
+                      {report.originalityScore >= 70
+                        ? 'Documento com alto nível de originalidade'
+                        : report.originalityScore >= 40
+                        ? 'Documento com similaridade moderada — revisão recomendada'
+                        : 'Alta similaridade detectada — revisão urgente necessária'}
+                    </p>
+                    <p className="text-sm text-slate-600 mt-1">
+                      {report.documentName} • Threshold: {threshold}%
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Matches */}
+            {report.matches.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/50 overflow-hidden"
               >
-                <Download className="w-4 h-4" />
-                Exportar
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div className={`p-4 rounded-xl border ${
-                  report.originalityScore >= 70 ? 'bg-emerald-50 border-emerald-200' :
-                  report.originalityScore >= 40 ? 'bg-amber-50 border-amber-200' :
-                  'bg-red-50 border-red-200'
-                }`}>
-                  <p className="text-xs font-medium text-slate-500 mb-1">Score de Originalidade</p>
-                  <p className={`text-2xl font-bold ${
-                    report.originalityScore >= 70 ? 'text-emerald-600' :
-                    report.originalityScore >= 40 ? 'text-amber-600' :
-                    'text-red-600'
-                  }`}>
-                    {report.originalityScore}%
-                  </p>
+                <div className="p-8 border-b border-slate-100">
+                  <h3 className="text-lg font-bold text-slate-800">
+                    Correspondências Detalhadas ({report.matches.length})
+                  </h3>
                 </div>
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <p className="text-xs font-medium text-slate-500 mb-1">Similaridade Total</p>
-                  <p className="text-2xl font-bold text-slate-800">{report.totalSimilarity}%</p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <p className="text-xs font-medium text-slate-500 mb-1">Correspondências</p>
-                  <p className="text-2xl font-bold text-slate-800">{report.matches.length}</p>
-                </div>
-              </div>
-
-              {/* Verdict */}
-              <div className={`p-4 rounded-xl flex items-center gap-3 ${
-                report.originalityScore >= 70 ? 'bg-emerald-50 border border-emerald-200' :
-                report.originalityScore >= 40 ? 'bg-amber-50 border border-amber-200' :
-                'bg-red-50 border border-red-200'
-              }`}>
-                {report.originalityScore >= 70 ? (
-                  <CheckCircle className="w-6 h-6 text-emerald-500 shrink-0" />
-                ) : (
-                  <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0" />
-                )}
-                <div>
-                  <p className={`text-sm font-semibold ${
-                    report.originalityScore >= 70 ? 'text-emerald-800' :
-                    report.originalityScore >= 40 ? 'text-amber-800' :
-                    'text-red-800'
-                  }`}>
-                    {report.originalityScore >= 70
-                      ? 'Documento com alto nível de originalidade'
-                      : report.originalityScore >= 40
-                      ? 'Documento com similaridade moderada — revisão recomendada'
-                      : 'Alta similaridade detectada — revisão urgente necessária'}
-                  </p>
-                  <p className="text-xs text-slate-600 mt-0.5">
-                    {report.documentName} • Threshold: {threshold}%
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Matches */}
-          {report.matches.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="p-6 border-b border-slate-100">
-                <h3 className="text-sm font-semibold text-slate-800">
-                  Correspondências Detalhadas ({report.matches.length})
-                </h3>
-              </div>
-              <div className="divide-y divide-slate-100">
-                {report.matches.map((match, idx) => (
-                  <div key={idx} className="p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-slate-400" />
-                        <span className="text-sm font-medium text-slate-700">
-                          {match.comparedDocumentName}
+                <div className="divide-y divide-slate-100">
+                  {report.matches.map((match, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + idx * 0.1 }}
+                      className="p-6 hover:bg-slate-50/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-slate-400" />
+                          <span className="text-base font-bold text-slate-700">
+                            {match.comparedDocumentName}
+                          </span>
+                        </div>
+                        <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
+                          match.similarity >= 80 ? 'bg-red-50 text-red-600 border border-red-200' :
+                          match.similarity >= 60 ? 'bg-amber-50 text-amber-600 border border-amber-200' :
+                          'bg-blue-50 text-blue-600 border border-blue-200'
+                        }`}>
+                          {match.similarity}% similar
                         </span>
                       </div>
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                        match.similarity >= 80 ? 'bg-red-50 text-red-600' :
-                        match.similarity >= 60 ? 'bg-amber-50 text-amber-600' :
-                        'bg-blue-50 text-blue-600'
-                      }`}>
-                        {match.similarity}% similar
-                      </span>
-                    </div>
 
-                    {match.passages.length > 0 && (
-                      <div className="space-y-2">
-                        {match.passages.slice(0, 3).map((passage, pIdx) => (
-                          <div key={pIdx} className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="bg-red-50/50 p-2 rounded-lg border border-red-100">
-                              <p className="text-red-600 font-medium mb-1">Original</p>
-                              <p className="text-slate-600 font-mono line-clamp-2">{passage.text1}</p>
-                            </div>
-                            <div className="bg-amber-50/50 p-2 rounded-lg border border-amber-100">
-                              <p className="text-amber-600 font-medium mb-1">Comparado</p>
-                              <p className="text-slate-600 font-mono line-clamp-2">{passage.text2}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+                      {match.passages.length > 0 && (
+                        <div className="space-y-3">
+                          {match.passages.slice(0, 3).map((passage, pIdx) => (
+                            <motion.div
+                              key={pIdx}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.6 + idx * 0.1 + pIdx * 0.05 }}
+                              className="grid grid-cols-1 md:grid-cols-2 gap-3"
+                            >
+                              <div className="bg-gradient-to-br from-red-50/50 to-orange-50/50 p-4 rounded-xl border border-red-100">
+                                <p className="text-xs font-bold text-red-600 mb-2 uppercase tracking-wide">Original</p>
+                                <p className="text-sm text-slate-600 font-mono line-clamp-3 leading-relaxed">{passage.text1}</p>
+                              </div>
+                              <div className="bg-gradient-to-br from-amber-50/50 to-yellow-50/50 p-4 rounded-xl border border-amber-100">
+                                <p className="text-xs font-bold text-amber-600 mb-2 uppercase tracking-wide">Comparado</p>
+                                <p className="text-sm text-slate-600 font-mono line-clamp-3 leading-relaxed">{passage.text2}</p>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

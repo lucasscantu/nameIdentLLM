@@ -195,6 +195,38 @@ Os quatro algoritmos são combinados com pesos:
 
 Este projeto é destinado ao uso educacional e acadêmico.
 
+## 🧪 Testes
+
+O projeto inclui testes automatizados usando Vitest e React Testing Library:
+
+```bash
+# Rodar todos os testes
+npx vitest run
+
+# Rodar testes em modo watch
+npx vitest
+
+# Gerar relatório de cobertura
+npx vitest run --coverage
+```
+
+### Testes Incluídos
+- **algorithms.test.ts**: Testes unitários para todos os 4 algoritmos de similaridade
+- **storage.test.ts**: Testes para funções de armazenamento e utilitários
+- **ollama.test.ts**: Testes para o cliente Ollama
+- **Layout.test.tsx**: Testes de componente para o Layout
+- **App.test.tsx**: Testes de integração do App principal
+
+## 🎨 Melhorias de Frontend
+
+- Animações suaves com Framer Motion
+- Gráficos interativos com Recharts
+- Design system consistente com gradientes e glassmorphism
+- Transições de página animadas
+- Feedback visual em todas as interações
+- Layout responsivo mobile-first
+- Sidebar com navegação intuitiva
+
 ## 🤝 Contribuição
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
