@@ -14,6 +14,7 @@ import {
   Brain,
   ChevronRight,
   Sparkles,
+  History,
 } from 'lucide-react';
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { path: '/semantic', label: 'Busca Semântica', icon: Search, description: 'Busca com IA' },
   { path: '/plagiarism', label: 'Detecção de Plágio', icon: ShieldAlert, description: 'Verificar originalidade' },
   { path: '/documents', label: 'Documentos', icon: FileText, description: 'Gerenciar arquivos' },
+  { path: '/history', label: 'Histórico', icon: History, description: 'Análises anteriores' },
   { path: '/settings', label: 'Configurações', icon: Settings, description: 'Configurar Ollama' },
 ];
 
